@@ -1,0 +1,4 @@
+project: PROJECT
+target: fuzz_block_header
+cmds:
+- cmd: /out/fuzz_block_header
