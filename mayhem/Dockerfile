@@ -15,10 +15,10 @@
 ################################################################################
 
 FROM gcr.io/oss-fuzz-base/base-builder-go
-RUN apt-get update && apt-get install -y mesa-opencl-icd ocl-icd-opencl-dev gcc git bzr jq pkg-config curl clang build-essential hwloc libhwloc-dev
+RUN apt-get update && apt-get install -y mesa-opencl-icd ocl-icd-opencl-dev gcc git bzr jq pkg-config curl clang build-essential hwloc libhwloc-dev && \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 COPY . lotus
-RUN rm -rf lotus/mayhem
-RUN git clone --depth 1 https://github.com/filecoin-project/fuzzing-lotus
+RUN rm -rf lotus/mayhem && git clone --depth 1 https://github.com/filecoin-project/fuzzing-lotus
 COPY mayhem/build.sh $SRC/
 WORKDIR $SRC/lotus
 
