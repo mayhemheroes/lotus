@@ -20,6 +20,8 @@ func main() {
 
 	local := []*cli.Command{
 		addressCmd,
+		statActorCmd,
+		statObjCmd,
 		base64Cmd,
 		base32Cmd,
 		base16Cmd,
@@ -51,7 +53,6 @@ func main() {
 		exportChainCmd,
 		exportCarCmd,
 		consensusCmd,
-		storageStatsCmd,
 		syncCmd,
 		stateTreePruneCmd,
 		datastoreCmd,

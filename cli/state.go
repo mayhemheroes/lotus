@@ -41,7 +41,7 @@ import (
 	"github.com/filecoin-project/lotus/build"
 	"github.com/filecoin-project/lotus/chain/actors"
 	"github.com/filecoin-project/lotus/chain/actors/builtin"
-	"github.com/filecoin-project/lotus/chain/consensus/filcns"
+	"github.com/filecoin-project/lotus/chain/consensus"
 	"github.com/filecoin-project/lotus/chain/state"
 	"github.com/filecoin-project/lotus/chain/stmgr"
 	"github.com/filecoin-project/lotus/chain/store"
@@ -252,10 +252,16 @@ func ParseTipSetString(ts string) ([]cid.Cid, error) {
 	return cids, nil
 }
 
+type TipSetResolver interface {
+	ChainHead(context.Context) (*types.TipSet, error)
+	ChainGetTipSetByHeight(context.Context, abi.ChainEpoch, types.TipSetKey) (*types.TipSet, error)
+	ChainGetTipSet(context.Context, types.TipSetKey) (*types.TipSet, error)
+}
+
 // LoadTipSet gets the tipset from the context, or the head from the API.
 //
 // It always gets the head from the API so commands use a consistent tipset even if time pases.
-func LoadTipSet(ctx context.Context, cctx *cli.Context, api v0api.FullNode) (*types.TipSet, error) {
+func LoadTipSet(ctx context.Context, cctx *cli.Context, api TipSetResolver) (*types.TipSet, error) {
 	tss := cctx.String("tipset")
 	if tss == "" {
 		return api.ChainHead(ctx)
@@ -264,7 +270,7 @@ func LoadTipSet(ctx context.Context, cctx *cli.Context, api v0api.FullNode) (*ty
 	return ParseTipSetRef(ctx, api, tss)
 }
 
-func ParseTipSetRef(ctx context.Context, api v0api.FullNode, tss string) (*types.TipSet, error) {
+func ParseTipSetRef(ctx context.Context, api TipSetResolver, tss string) (*types.TipSet, error) {
 	if tss[0] == '@' {
 		if tss == "@head" {
 			return api.ChainHead(ctx)
@@ -1408,7 +1414,7 @@ func codeStr(c cid.Cid) string {
 }
 
 func getMethod(code cid.Cid, method abi.MethodNum) string {
-	return filcns.NewActorRegistry().Methods[code][method].Name // todo: use remote
+	return consensus.NewActorRegistry().Methods[code][method].Name // todo: use remote
 }
 
 func toFil(f types.BigInt) types.FIL {
@@ -1424,7 +1430,7 @@ func isVerySlow(t time.Duration) bool {
 }
 
 func JsonParams(code cid.Cid, method abi.MethodNum, params []byte) (string, error) {
-	p, err := stmgr.GetParamType(filcns.NewActorRegistry(), code, method) // todo use api for correct actor registry
+	p, err := stmgr.GetParamType(consensus.NewActorRegistry(), code, method) // todo use api for correct actor registry
 	if err != nil {
 		return "", err
 	}
@@ -1438,7 +1444,7 @@ func JsonParams(code cid.Cid, method abi.MethodNum, params []byte) (string, erro
 }
 
 func jsonReturn(code cid.Cid, method abi.MethodNum, ret []byte) (string, error) {
-	methodMeta, found := filcns.NewActorRegistry().Methods[code][method] // TODO: use remote
+	methodMeta, found := consensus.NewActorRegistry().Methods[code][method] // TODO: use remote
 	if !found {
 		return "", fmt.Errorf("method %d not found on actor %s", method, code)
 	}
