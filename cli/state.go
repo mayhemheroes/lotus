@@ -99,8 +99,8 @@ var StateMinerProvingDeadlineCmd = &cli.Command{
 
 		ctx := ReqContext(cctx)
 
-		if !cctx.Args().Present() {
-			return fmt.Errorf("must specify miner to get information for")
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		addr, err := address.NewFromString(cctx.Args().First())
@@ -142,8 +142,8 @@ var StateMinerInfo = &cli.Command{
 
 		ctx := ReqContext(cctx)
 
-		if !cctx.Args().Present() {
-			return fmt.Errorf("must specify miner to get information for")
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		addr, err := address.NewFromString(cctx.Args().First())
@@ -397,8 +397,8 @@ var StateSectorsCmd = &cli.Command{
 
 		ctx := ReqContext(cctx)
 
-		if !cctx.Args().Present() {
-			return fmt.Errorf("must specify miner to list sectors for")
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		maddr, err := address.NewFromString(cctx.Args().First())
@@ -437,8 +437,8 @@ var StateActiveSectorsCmd = &cli.Command{
 
 		ctx := ReqContext(cctx)
 
-		if !cctx.Args().Present() {
-			return fmt.Errorf("must specify miner to list sectors for")
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		maddr, err := address.NewFromString(cctx.Args().First())
@@ -469,8 +469,8 @@ var StateExecTraceCmd = &cli.Command{
 	Usage:     "Get the execution trace of a given message",
 	ArgsUsage: "<messageCid>",
 	Action: func(cctx *cli.Context) error {
-		if !cctx.Args().Present() {
-			return ShowHelp(cctx, fmt.Errorf("must pass message cid"))
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		mcid, err := cid.Decode(cctx.Args().First())
@@ -612,8 +612,8 @@ var StateGetDealSetCmd = &cli.Command{
 
 		ctx := ReqContext(cctx)
 
-		if !cctx.Args().Present() {
-			return fmt.Errorf("must specify deal ID")
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		dealid, err := strconv.ParseUint(cctx.Args().First(), 10, 64)
@@ -756,8 +756,8 @@ var StateGetActorCmd = &cli.Command{
 
 		ctx := ReqContext(cctx)
 
-		if !cctx.Args().Present() {
-			return fmt.Errorf("must pass address of actor to get")
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		addr, err := address.NewFromString(cctx.Args().First())
@@ -782,6 +782,9 @@ var StateGetActorCmd = &cli.Command{
 		fmt.Printf("Nonce:\t\t%d\n", a.Nonce)
 		fmt.Printf("Code:\t\t%s (%s)\n", a.Code, strtype)
 		fmt.Printf("Head:\t\t%s\n", a.Head)
+		if a.Address != nil {
+			fmt.Printf("Delegated address:\t\t%s\n", a.Address)
+		}
 
 		return nil
 	},
@@ -807,8 +810,8 @@ var StateLookupIDCmd = &cli.Command{
 
 		ctx := ReqContext(cctx)
 
-		if !cctx.Args().Present() {
-			return fmt.Errorf("must pass address of actor to get")
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		addr, err := address.NewFromString(cctx.Args().First())
@@ -851,8 +854,8 @@ var StateSectorSizeCmd = &cli.Command{
 
 		ctx := ReqContext(cctx)
 
-		if !cctx.Args().Present() {
-			return fmt.Errorf("must pass miner's address")
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		addr, err := address.NewFromString(cctx.Args().First())
@@ -888,8 +891,8 @@ var StateReadStateCmd = &cli.Command{
 
 		ctx := ReqContext(cctx)
 
-		if !cctx.Args().Present() {
-			return fmt.Errorf("must pass address of actor to get")
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		addr, err := address.NewFromString(cctx.Args().First())
@@ -1470,8 +1473,8 @@ var StateWaitMsgCmd = &cli.Command{
 		},
 	},
 	Action: func(cctx *cli.Context) error {
-		if !cctx.Args().Present() {
-			return fmt.Errorf("must specify message cid to wait for")
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		api, closer, err := GetFullNodeAPI(cctx)
@@ -1507,8 +1510,8 @@ var StateSearchMsgCmd = &cli.Command{
 	Usage:     "Search to see whether a message has appeared on chain",
 	ArgsUsage: "[messageCid]",
 	Action: func(cctx *cli.Context) error {
-		if !cctx.Args().Present() {
-			return fmt.Errorf("must specify message cid to search for")
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		api, closer, err := GetFullNodeAPI(cctx)
@@ -1839,11 +1842,12 @@ var StateMarketCmd = &cli.Command{
 }
 
 var stateMarketBalanceCmd = &cli.Command{
-	Name:  "balance",
-	Usage: "Get the market balance (locked and escrowed) for a given account",
+	Name:      "balance",
+	Usage:     "Get the market balance (locked and escrowed) for a given account",
+	ArgsUsage: "[address]",
 	Action: func(cctx *cli.Context) error {
-		if !cctx.Args().Present() {
-			return ShowHelp(cctx, fmt.Errorf("must specify address to print market balance for"))
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		api, closer, err := GetFullNodeAPI(cctx)

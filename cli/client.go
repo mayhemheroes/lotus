@@ -166,8 +166,8 @@ var clientDropCmd = &cli.Command{
 	Usage:     "Remove import",
 	ArgsUsage: "[import ID...]",
 	Action: func(cctx *cli.Context) error {
-		if !cctx.Args().Present() {
-			return xerrors.Errorf("no imports specified")
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		api, closer, err := GetFullNodeAPI(cctx)
@@ -996,9 +996,8 @@ var clientFindCmd = &cli.Command{
 		},
 	},
 	Action: func(cctx *cli.Context) error {
-		if !cctx.Args().Present() {
-			fmt.Println("Usage: find [CID]")
-			return nil
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		file, err := cid.Parse(cctx.Args().First())
@@ -1063,8 +1062,7 @@ var clientQueryRetrievalAskCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		afmt := NewAppFmt(cctx.App)
 		if cctx.NArg() != 2 {
-			afmt.Println("Usage: retrieval-ask [minerAddress] [data CID]")
-			return nil
+			return IncorrectNumArgs(cctx)
 		}
 
 		maddr, err := address.NewFromString(cctx.Args().First())
@@ -1517,6 +1515,8 @@ func GetAsks(ctx context.Context, api lapi.FullNode) ([]QueriedAsk, error) {
 				}
 			}(miner)
 		}
+
+		wg.Wait()
 	}()
 
 loop:
@@ -1590,6 +1590,8 @@ loop:
 				lk.Unlock()
 			}(miner)
 		}
+
+		wg.Wait()
 	}()
 
 loop2:
@@ -1635,8 +1637,7 @@ var clientQueryAskCmd = &cli.Command{
 	Action: func(cctx *cli.Context) error {
 		afmt := NewAppFmt(cctx.App)
 		if cctx.NArg() != 1 {
-			afmt.Println("Usage: query-ask [minerAddress]")
-			return nil
+			return IncorrectNumArgs(cctx)
 		}
 
 		maddr, err := address.NewFromString(cctx.Args().First())
@@ -1940,8 +1941,8 @@ var clientGetDealCmd = &cli.Command{
 	Usage:     "Print detailed deal information",
 	ArgsUsage: "[proposalCID]",
 	Action: func(cctx *cli.Context) error {
-		if !cctx.Args().Present() {
-			return cli.ShowCommandHelp(cctx, cctx.Command.Name)
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		api, closer, err := GetFullNodeAPI(cctx)
@@ -2054,8 +2055,8 @@ var clientStat = &cli.Command{
 		defer closer()
 		ctx := ReqContext(cctx)
 
-		if !cctx.Args().Present() || cctx.NArg() != 1 {
-			return fmt.Errorf("must specify cid of data")
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 
 		dataCid, err := cid.Parse(cctx.Args().First())
@@ -2076,8 +2077,9 @@ var clientStat = &cli.Command{
 }
 
 var clientRestartTransfer = &cli.Command{
-	Name:  "restart-transfer",
-	Usage: "Force restart a stalled data transfer",
+	Name:      "restart-transfer",
+	Usage:     "Force restart a stalled data transfer",
+	ArgsUsage: "[transferID]",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:  "peerid",
@@ -2090,8 +2092,8 @@ var clientRestartTransfer = &cli.Command{
 		},
 	},
 	Action: func(cctx *cli.Context) error {
-		if !cctx.Args().Present() {
-			return cli.ShowCommandHelp(cctx, cctx.Command.Name)
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 		api, closer, err := GetFullNodeAPI(cctx)
 		if err != nil {
@@ -2136,8 +2138,9 @@ var clientRestartTransfer = &cli.Command{
 }
 
 var clientCancelTransfer = &cli.Command{
-	Name:  "cancel-transfer",
-	Usage: "Force cancel a data transfer",
+	Name:      "cancel-transfer",
+	Usage:     "Force cancel a data transfer",
+	ArgsUsage: "[transferID]",
 	Flags: []cli.Flag{
 		&cli.StringFlag{
 			Name:  "peerid",
@@ -2155,8 +2158,8 @@ var clientCancelTransfer = &cli.Command{
 		},
 	},
 	Action: func(cctx *cli.Context) error {
-		if !cctx.Args().Present() {
-			return cli.ShowCommandHelp(cctx, cctx.Command.Name)
+		if cctx.NArg() != 1 {
+			return IncorrectNumArgs(cctx)
 		}
 		api, closer, err := GetFullNodeAPI(cctx)
 		if err != nil {
